@@ -1,0 +1,102 @@
+export const dummyMetrics = {
+  totalResumes: 142,
+  avgMatchScore: 73,
+  skillsMapped: 1847,
+  processedToday: 18,
+};
+
+export const recentActivity = [
+  {
+    id: 1,
+    name: "Rahul Sharma",
+    topSkills: ["Python", "FastAPI", "ML"],
+    matchScore: 82,
+    status: "Processed",
+    experience: 3,
+    email: "rahul.sharma@email.com",
+    education: "B.Tech Computer Science, IIT Delhi",
+    allSkills: ["Python", "FastAPI", "Machine Learning", "React", "SQL", "Docker"],
+    missingSkills: ["Kubernetes", "System Design", "Redis"],
+  },
+  {
+    id: 2,
+    name: "Priya Patel",
+    topSkills: ["React", "Node.js", "MongoDB"],
+    matchScore: 68,
+    status: "Processed",
+    experience: 2,
+    email: "priya.patel@email.com",
+    education: "B.E. Information Technology, NIT Surat",
+    allSkills: ["React", "Node.js", "MongoDB", "JavaScript", "CSS", "Git"],
+    missingSkills: ["TypeScript", "AWS", "GraphQL"],
+  },
+  {
+    id: 3,
+    name: "Arjun Mehta",
+    topSkills: ["Java", "Spring Boot", "AWS"],
+    matchScore: 91,
+    status: "Processed",
+    experience: 5,
+    email: "arjun.mehta@email.com",
+    education: "M.Tech Software Engineering, BITS Pilani",
+    allSkills: ["Java", "Spring Boot", "AWS", "Microservices", "Kafka", "Docker"],
+    missingSkills: ["Kubernetes"],
+  },
+  {
+    id: 4,
+    name: "Sneha Reddy",
+    topSkills: ["Data Science", "TensorFlow", "SQL"],
+    matchScore: 75,
+    status: "Processed",
+    experience: 4,
+    email: "sneha.reddy@email.com",
+    education: "M.Sc Data Science, University of Hyderabad",
+    allSkills: ["Python", "TensorFlow", "PyTorch", "SQL", "Pandas", "Scikit-learn"],
+    missingSkills: ["MLOps", "Spark", "Airflow"],
+  },
+  {
+    id: 5,
+    name: "Vikram Singh",
+    topSkills: ["DevOps", "Kubernetes", "CI/CD"],
+    matchScore: 88,
+    status: "Pending",
+    experience: 6,
+    email: "vikram.singh@email.com",
+    education: "B.Tech ECE, VIT Vellore",
+    allSkills: ["Kubernetes", "Docker", "Jenkins", "AWS", "Terraform", "Linux"],
+    missingSkills: ["Prometheus", "Grafana"],
+  },
+];
+
+export const skillDistribution = [
+  { range: "90-100%", count: 18 },
+  { range: "75-89%",  count: 42 },
+  { range: "60-74%",  count: 51 },
+  { range: "40-59%",  count: 24 },
+  { range: "0-39%",   count: 7  },
+];
+
+export const taxonomyData = [
+  { canonical: "JavaScript", category: "Technical", aliases: ["JS", "Javascript", "java script"] },
+  { canonical: "TypeScript", category: "Technical", aliases: ["TS", "Typescript"] },
+  { canonical: "Python",     category: "Technical", aliases: ["python3", "py", "Python3"] },
+  { canonical: "Kubernetes", category: "Technical", aliases: ["K8s", "k8s", "kube"] },
+  { canonical: "Machine Learning", category: "Technical", aliases: ["ML", "ml engineering", "machine-learning"] },
+  { canonical: "React",      category: "Technical", aliases: ["React.js", "ReactJS", "react js"] },
+  { canonical: "Node.js",    category: "Technical", aliases: ["NodeJS", "Node", "node js"] },
+  { canonical: "PostgreSQL", category: "Technical", aliases: ["Postgres", "psql", "postgresql"] },
+  { canonical: "Deep Learning", category: "Technical", aliases: ["DL", "deep-learning", "neural networks"] },
+  { canonical: "Docker",     category: "Technical", aliases: ["docker container", "containerization"] },
+  { canonical: "Amazon Web Services", category: "Technical", aliases: ["AWS", "aws cloud", "amazon cloud"] },
+  { canonical: "Communication", category: "Soft Skill", aliases: ["verbal communication", "written communication"] },
+  { canonical: "Leadership",    category: "Soft Skill", aliases: ["team lead", "people management", "leading teams"] },
+  { canonical: "Project Management", category: "Business", aliases: ["PM", "project mgmt", "project planning"] },
+  { canonical: "Data Analysis", category: "Business", aliases: ["data analytics", "data analyst", "analytics"] },
+];
+
+export const dummyMatchResult = {
+  matchScore: 78,
+  matchedSkills: ["Python", "FastAPI", "React", "SQL", "Docker"],
+  missingSkills: ["Kubernetes", "System Design", "Redis"],
+  note: "Strong backend profile. Candidate is missing infrastructure and system design skills required for senior roles.",
+};
