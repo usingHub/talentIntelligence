@@ -1,0 +1,6 @@
+{
+  "frontend": ["react", "javascript", "html", "css", "vue", "bootstrap"],
+  "backend": ["python", "node.js", "fastapi", "express", "sql", "mongodb"],
+  "devops": ["docker", "kubernetes", "aws", "ci/cd"],
+  "core": ["system design", "data structures", "algorithms"]
+}
