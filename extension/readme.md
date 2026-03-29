@@ -1,3 +1,8 @@
+
+
+***
+
+```markdown
 # 🧩 TalentAI Sourcing Extension (Beta)
 
 **Zero-Friction AI Sourcing directly in your browser.**
@@ -28,3 +33,59 @@ chrome-extension/
 ├── popup.css              # Dark mode styling and CSS animations
 ├── popup.js               # State management, API logic, and UI rendering
 └── content.js             # The scraper script injected into host web pages
+```
+
+---
+
+## 🚀 Installation Guide (Developer Mode)
+
+Because this is a developer prototype, it is loaded as an "unpacked" extension.
+
+1. Clone this repository or download the `chrome-extension` folder to your local machine.
+2. Open Google Chrome and navigate to `chrome://extensions/`.
+3. In the top right corner, toggle **Developer mode** to **ON**.
+4. Click the **Load unpacked** button in the top left corner.
+5. Select the `chrome-extension` directory.
+6. 🧩 Click the puzzle piece icon in your Chrome toolbar and **Pin** the TalentAI logo.
+
+---
+
+## 💻 Usage & Workflow
+
+1. Navigate to a candidate's profile (e.g., a LinkedIn page).
+2. Open the TalentAI extension popup.
+3. Select the target **Job Requisition** from the dropdown menu.
+4. Click **Scan Candidate Profile**.
+5. The extension will scrape the page, hit the local AI backend, and return the semantic match score and gap analysis in < 5 seconds.
+
+---
+
+## 🔌 API Contract (Backend Integration)
+
+The extension communicates with the central TalentAI FastAPI backend. It expects the server to be running locally at `http://localhost:8000`. 
+
+**Request Payload (`POST /api/v1/match`):**
+```json
+{
+  "candidate_text": "[Raw scraped text string]",
+  "target_role": "Senior Data Scientist"
+}
+```
+
+**Expected Response Payload:**
+```json
+{
+  "score": 87,
+  "strong_matches": ["Python", "FastAPI"],
+  "missing_skills": ["Kubernetes"],
+  "ai_deduction": "String explaining the contextual match logic."
+}
+```
+
+> **Note:** The backend must have `CORSMiddleware` configured to accept cross-origin requests, otherwise Chrome will block the fetch call.
+
+---
+**Maintained by Pratik Parihar** | Built for Tic Tech Toe'26
+```
+
+***
