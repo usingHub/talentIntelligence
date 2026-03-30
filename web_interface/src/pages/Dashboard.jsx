@@ -102,6 +102,8 @@ export default function Dashboard() {
         />
       </div>
 
+      <hr className="border-slate-200 my-6" />
+
       {/* ── Bottom Row: Table + Chart ── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 

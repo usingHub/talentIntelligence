@@ -341,7 +341,7 @@ export default function CandidateProfile() {
                   Target role requirements
                 </label>
                 <textarea
-                  className="flex-1 w-full bg-slate-100 border border-slate-200 rounded-lg p-4 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow resize-none mb-4"
+                  className="flex-1 w-full bg-slate-50 border border-slate-300 rounded-lg p-4 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow resize-none mb-4"
                   placeholder="e.g. We are looking for a backend engineer proficient in Python, FastAPI, and container orchestration using Kubernetes..."
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}

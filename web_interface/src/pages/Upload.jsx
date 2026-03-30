@@ -156,7 +156,7 @@ export default function Upload() {
                   Target Job Description
                 </label>
                 <textarea
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
                   rows={4}
                   placeholder="Paste the job requirements, required skills, and responsibilities here..."
                   value={jobDescription}

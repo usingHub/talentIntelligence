@@ -40,6 +40,15 @@ export default function TaxonomyBrowser() {
     return matchesCanonical || matchesAlias || matchesCategory;
   });
 
+  const groupedTaxonomy = filteredTaxonomy.reduce((acc, skill) => {
+    const cat = skill.category || "Uncategorized";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(skill);
+    return acc;
+  }, {});
+
+  const categories = Object.keys(groupedTaxonomy).sort();
+
   return (
     <div className="w-full px-6 py-8 relative">
       
@@ -91,60 +100,59 @@ export default function TaxonomyBrowser() {
           </div>
         )}
 
-        {/* Data Table */}
+        {/* Grouped Taxonomy Grid */}
         {!isLoading && !error && (
-          <div className="overflow-x-auto w-full">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-slate-50 text-slate-600 font-semibold text-xs uppercase tracking-wider border-b border-slate-200">
-                <tr>
-                  <th className="px-6 py-4">Canonical Skill Name</th>
-                  <th className="px-6 py-4">Category</th>
-                  <th className="px-6 py-4">Known Aliases (Raw Input)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredTaxonomy.map((item, index) => (
-                  <tr key={index} className="hover:bg-slate-100 transition-colors">
-                    <td className="px-6 py-4">
-                      <span className="font-semibold text-slate-900">{item.canonical}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        item.category === 'Technical' ? 'bg-slate-50 text-slate-700 border border-slate-200' :
-                        item.category === 'Soft Skill' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                        'bg-amber-50 text-amber-700 border border-amber-200'
-                      }`}>
-                        {item.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1.5 max-w-2xl whitespace-normal cursor-default">
-                        {item.aliases.length > 0 ? (
-                          item.aliases.map((alias, i) => (
-                            <span key={i} className="bg-slate-100 text-slate-600 border border-slate-200 font-mono text-[11px] px-2 py-0.5 rounded-md">
-                              "{alias}"
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-slate-400 text-xs italic">- None configured -</span>
-                        )}
+          <div className="p-6 bg-slate-50 flex-1 overflow-y-auto">
+            {filteredTaxonomy.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="text-5xl mb-4 opacity-30 text-slate-400">📭</div>
+                <h6 className="text-lg font-semibold text-slate-900 mb-2">No skills match your search</h6>
+                <p className="text-sm text-slate-600">Try searching for "React", "js", or "Technical"</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {categories.map((category) => {
+                  const skills = groupedTaxonomy[category];
+                  
+                  // Color assignment based on category
+                  let colorClasses = "bg-amber-50 text-amber-700 border border-amber-200"; // fallback
+                  if (category === "Technical") {
+                    colorClasses = "bg-blue-50 text-blue-700 border border-blue-200";
+                  } else if (category === "Soft Skill") {
+                    colorClasses = "bg-purple-50 text-purple-700 border border-purple-200";
+                  }
+
+                  return (
+                    <div key={category} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                      <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                        <h5 className="font-semibold text-slate-900 flex items-center gap-2">
+                          {category} <span className="text-slate-400 text-xs font-normal">({skills.length})</span>
+                        </h5>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-                
-                {/* Empty Search Results */}
-                {filteredTaxonomy.length === 0 && (
-                  <tr>
-                    <td colSpan="3" className="text-center py-16">
-                      <div className="text-5xl mb-4 opacity-30 text-slate-400">📭</div>
-                      <h6 className="text-lg font-semibold text-slate-900 mb-2">No skills match your search</h6>
-                      <p className="text-sm text-slate-600">Try searching for "React", "js", or "Technical"</p>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                      <div className="p-4 flex flex-wrap gap-3">
+                        {skills.map((skill, index) => (
+                          <div 
+                            key={index}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm flex flex-col gap-1 ${colorClasses}`}
+                          >
+                            <span className="font-semibold">{skill.canonical}</span>
+                            {skill.aliases.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {skill.aliases.map((alias, i) => (
+                                  <span key={i} className="bg-white/50 border border-black/5 text-[10px] px-1.5 py-0.5 rounded">
+                                    {alias}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
         
