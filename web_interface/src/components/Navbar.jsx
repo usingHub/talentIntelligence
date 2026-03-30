@@ -3,15 +3,15 @@ import { Link, useLocation } from "react-router-dom";
 export default function Navbar() {
   const location = useLocation();
 
-  const isActive = (path) =>
-    location.pathname === path
-      ? "text-indigo-600 font-semibold"
-      : "text-slate-500 hover:text-slate-900 font-medium transition-colors";
-
-  return (
-    <nav className="flex flex-wrap items-center justify-between px-6 py-3 bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
-      <Link className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-1" to="/">
-        <span className="text-indigo-600">Talent</span>IQ
+    const isActive = (path) =>
+      location.pathname === path
+        ? "text-indigo-600 font-semibold"
+        : "text-slate-600 hover:text-slate-900 font-medium transition-colors";
+  
+    return (
+      <nav className="flex flex-wrap items-center justify-between px-6 py-3 bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
+        <Link className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-1" to="/">
+          <span className="text-slate-900">Talent</span>IQ
       </Link>
 
       <div className="flex flex-wrap items-center gap-6 mt-3 sm:mt-0">
@@ -25,7 +25,7 @@ export default function Navbar() {
           Skill Taxonomy
         </Link>
         <a
-          className="text-slate-500 hover:text-slate-900 font-medium transition-colors"
+          className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
           href="https://talentiq-backend-7dk9.onrender.com/docs"
           target="_blank"
           rel="noreferrer"

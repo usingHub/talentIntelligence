@@ -29,7 +29,7 @@ export default function ExtensionSetup() {
         <h2 className="text-4xl font-bold text-slate-900 tracking-tight mb-4">
           TalentIQ Sourcing Extension
         </h2>
-        <p className="text-slate-500 text-lg mb-8 max-w-2xl">
+        <p className="text-slate-600 text-lg mb-8 max-w-2xl">
           Zero-friction AI sourcing directly on LinkedIn and Wellfound.
         </p>
         <button 
@@ -47,14 +47,14 @@ export default function ExtensionSetup() {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 h-full flex flex-col">
           <div className="p-8">
             <h5 className="text-xl font-bold text-slate-900 mb-8 flex items-center gap-2">
-              <span className="text-indigo-500">✨</span> Key Features
+              <span className="text-slate-400">✨</span> Key Features
             </h5>
             
             <div className="flex gap-4 mb-8">
               <div className="text-3xl shrink-0 mt-1">🪄</div>
               <div>
                 <h6 className="font-semibold text-slate-900 mb-1">One-Click Auto-Scraping</h6>
-                <p className="text-slate-500 text-sm leading-relaxed">Securely extracts visible profile text without manual highlighting. Bypasses rigid DOM structures instantly.</p>
+                <p className="text-slate-600 text-sm leading-relaxed">Securely extracts visible profile text without manual highlighting. Bypasses rigid DOM structures instantly.</p>
               </div>
             </div>
 
@@ -62,7 +62,7 @@ export default function ExtensionSetup() {
               <div className="text-3xl shrink-0 mt-1">⚡</div>
               <div>
                 <h6 className="font-semibold text-slate-900 mb-1">Zero-Latency Architecture</h6>
-                <p className="text-slate-500 text-sm leading-relaxed">Built entirely in Vanilla JS. No React bloat, just native browser performance hitting our FastAPI backend.</p>
+                <p className="text-slate-600 text-sm leading-relaxed">Built entirely in Vanilla JS. No React bloat, just native browser performance hitting our FastAPI backend.</p>
               </div>
             </div>
 
@@ -70,7 +70,7 @@ export default function ExtensionSetup() {
               <div className="text-3xl shrink-0 mt-1">🧠</div>
               <div>
                 <h6 className="font-semibold text-slate-900 mb-1">Explainable AI (XAI) UI</h6>
-                <p className="text-slate-500 text-sm leading-relaxed">Generates visual Gap Analysis right in the browser, tagging Verified Skills and Gaps alongside AI deduction.</p>
+                <p className="text-slate-600 text-sm leading-relaxed">Generates visual Gap Analysis right in the browser, tagging Verified Skills and Gaps alongside AI deduction.</p>
               </div>
             </div>
 
@@ -81,26 +81,26 @@ export default function ExtensionSetup() {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 h-full flex flex-col">
           <div className="p-8">
             <h5 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
-              <span className="text-amber-500">🛠️</span> Developer Mode Setup
+              <span className="text-slate-400">🛠️</span> Developer Mode Setup
             </h5>
-            <p className="text-slate-500 text-sm mb-8">
+            <p className="text-slate-600 text-sm mb-8">
               Because this is a prototype, it runs as an "unpacked" local extension.
             </p>
             
-            <ol className="list-decimal list-outside ml-5 space-y-6 text-slate-700 text-sm marker:text-indigo-600 marker:font-semibold">
+            <ol className="list-decimal list-outside ml-5 space-y-6 text-slate-700 text-sm marker:text-slate-400 marker:font-semibold">
               <li className="pl-2 leading-relaxed">
                 Download and unzip the extension folder using the button above.
               </li>
               <li className="pl-2 leading-relaxed">
                 Open Chrome and navigate to 
-                <code className="bg-slate-100 text-indigo-600 font-mono text-xs px-2 py-1 rounded ml-1.5 border border-slate-200">chrome://extensions/</code>
+                <code className="bg-slate-100 text-slate-600 font-mono text-xs px-2 py-1 rounded ml-1.5 border border-slate-200">chrome://extensions/</code>
               </li>
               <li className="pl-2 leading-relaxed">
                 Toggle <strong className="font-semibold text-slate-900">Developer mode</strong> to <strong className="font-semibold text-slate-900">ON</strong> in the top right corner.
               </li>
               <li className="pl-2 leading-relaxed">
                 Click the 
-                <span className="bg-white border border-slate-300 text-slate-700 font-medium px-2 py-1 rounded text-xs shadow-sm mx-1.5">Load unpacked</span> 
+                <span className="bg-white border border-slate-200 text-slate-700 font-medium px-2 py-1 rounded text-xs shadow-sm mx-1.5">Load unpacked</span> 
                 button in the top left.
               </li>
               <li className="pl-2 leading-relaxed">

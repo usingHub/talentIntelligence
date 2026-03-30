@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { recentActivity } from "../data/dummyData";
+import { useTalent } from "../context/TalentContext";
 
 // ---------------------------------------------------------------------------
 // Normalise candidate shape regardless of whether it came from:
@@ -43,12 +44,13 @@ export default function CandidateProfile() {
   const { id }       = useParams();
   const location     = useLocation();
   const navigate     = useNavigate();
+  const { jobDescription, setJobDescription, evaluations, saveEvaluation } = useTalent();
 
   const [candidate,     setCandidate]     = useState(null);
-  const [jobDescription, setJobDescription] = useState("");
   const [isMatching,    setIsMatching]    = useState(false);
   const [matchResult,   setMatchResult]   = useState(null);
   const [error,         setError]         = useState("");
+  const [lastRunJD,     setLastRunJD]     = useState("");
 
   // ── Load candidate data ───────────────────────────────────────────────────
   useEffect(() => {
@@ -80,18 +82,19 @@ export default function CandidateProfile() {
   }, [id, location.state]);
 
   // ── Match API call ────────────────────────────────────────────────────────
-  const runMatchEngine = async () => {
-    if (!jobDescription.trim() || !candidate) return;
+  const runMatchEngine = async (currentCandidate = candidate) => {
+    if (!jobDescription.trim() || !currentCandidate) return;
     setIsMatching(true);
     setMatchResult(null);
     setError("");
+    setLastRunJD(jobDescription);
 
     try {
       const response = await fetch("https://talentiq-backend-7dk9.onrender.com/api/v1/match", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          candidate_skills: candidate.skills,   // always correct field now
+          candidate_skills: currentCandidate.skills,   // always correct field now
           job_description:  jobDescription,
         }),
       });
@@ -103,7 +106,16 @@ export default function CandidateProfile() {
 
       const data = await response.json();
       if (data.status === "success") {
-        setMatchResult(data.data);
+        // FASTAPI MAPPING: Map the API response specifically to the requested JSON map
+        const mappedEval = {
+          score: data.data.match_score ?? 0,
+          verified_skills: data.data.matched_skills ?? [],
+          missing_skills: data.data.missing_skills ?? [],
+          ai_deduction: data.data.gap_analysis ?? ""
+        };
+        
+        setMatchResult(mappedEval);
+        saveEvaluation(currentCandidate.id, mappedEval);
       } else {
         throw new Error("Match engine returned an unexpected response.");
       }
@@ -115,15 +127,30 @@ export default function CandidateProfile() {
     }
   };
 
+  // Auto-load state or run engine
+  useEffect(() => {
+    if (candidate) {
+      // If we already have a cached evaluation, inject it instantly
+      if (evaluations[candidate.id]) {
+        setMatchResult(evaluations[candidate.id]);
+        setLastRunJD(jobDescription);
+      } 
+      // If we have a global JD but NO evaluation, AUTO-RUN immediately
+      else if (jobDescription.trim() && !isMatching && !matchResult) {
+        runMatchEngine(candidate);
+      }
+    }
+  }, [candidate]);
+
   // ── Loading state ─────────────────────────────────────────────────────────
   if (!candidate) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <svg className="animate-spin h-8 w-8 text-indigo-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <svg className="animate-spin h-8 w-8 text-slate-400 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <p className="text-slate-500 text-sm">Loading candidate profile...</p>
+        <p className="text-slate-600 text-sm">Loading candidate profile...</p>
       </div>
     );
   }
@@ -148,7 +175,7 @@ export default function CandidateProfile() {
         </button>
         <div>
           <h4 className="text-2xl font-bold text-slate-900 tracking-tight">Candidate Intelligence</h4>
-          <p className="text-slate-500 text-sm mt-0.5">
+          <p className="text-slate-600 text-sm mt-0.5">
             Detailed profile and role gap analysis
           </p>
         </div>
@@ -183,7 +210,7 @@ export default function CandidateProfile() {
             {/* Profile header */}
             <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
               <div
-                className="w-16 h-16 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xl shrink-0"
+                className="w-16 h-16 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xl shrink-0 border border-slate-200"
               >
                 {initials}
               </div>
@@ -191,8 +218,8 @@ export default function CandidateProfile() {
                 <h5 className="font-bold text-lg text-slate-900 mb-1">{candidate.name}</h5>
                 <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                   candidate.status === "Processed" 
-                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20"
-                    : "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20"
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    : "bg-amber-50 text-amber-700 border border-amber-200"
                 }`}>
                   {candidate.status}
                 </span>
@@ -314,15 +341,15 @@ export default function CandidateProfile() {
                   Target role requirements
                 </label>
                 <textarea
-                  className="flex-1 w-full bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow resize-none mb-4"
+                  className="flex-1 w-full bg-slate-100 border border-slate-200 rounded-lg p-4 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow resize-none mb-4"
                   placeholder="e.g. We are looking for a backend engineer proficient in Python, FastAPI, and container orchestration using Kubernetes..."
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                 />
                 <button
                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm hover:-translate-y-[1px] transition-all disabled:bg-slate-300 disabled:shadow-none disabled:-translate-y-0 disabled:text-slate-500 flex justify-center items-center gap-2"
-                  onClick={runMatchEngine}
-                  disabled={!jobDescription.trim() || isMatching}
+                  onClick={() => runMatchEngine(candidate)}
+                  disabled={!jobDescription.trim() || isMatching || jobDescription === lastRunJD}
                 >
                   {isMatching ? (
                     <>
@@ -332,6 +359,8 @@ export default function CandidateProfile() {
                       </svg>
                       Analysing...
                     </>
+                  ) : matchResult ? (
+                    "Update Role & Re-Run"
                   ) : (
                     "Run Match Engine"
                   )}
@@ -348,7 +377,7 @@ export default function CandidateProfile() {
                       🎯
                     </div>
                     <h6 className="font-semibold text-slate-900 mb-2">No analysis yet</h6>
-                    <p className="text-sm text-slate-500 max-w-xs">
+                    <p className="text-sm text-slate-600 max-w-xs">
                       Paste a job description and run the engine to see the gap analysis.
                     </p>
                   </div>
@@ -357,12 +386,12 @@ export default function CandidateProfile() {
                 {/* Processing state */}
                 {isMatching && (
                   <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-                    <svg className="animate-spin h-10 w-10 text-indigo-500 mb-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-10 w-10 text-slate-400 mb-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     <h6 className="font-semibold text-slate-900 mb-2">Multi-agent analysis running</h6>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-slate-600">
                       Normalize Agent → Match Agent → Gap Analysis
                     </p>
                   </div>
@@ -375,24 +404,21 @@ export default function CandidateProfile() {
                     {/* Score ring */}
                     <div className="flex items-center gap-4 mb-6">
                       <div
-                        className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-xl shrink-0 ${getSolidScoreClasses(matchResult.match_score)}`}
+                        className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-xl shrink-0 ${getSolidScoreClasses(matchResult.score)}`}
                       >
-                        {matchResult.match_score}%
+                        {matchResult.score}%
                       </div>
                       <div>
                         <h5 className="font-bold text-slate-900 mb-1">Match Score</h5>
-                        <p className="text-slate-500 text-sm">
-                          {matchResult.recommendation}
-                        </p>
                       </div>
                     </div>
 
                     {/* Gap analysis text */}
                     <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6 shadow-sm">
-                      <h6 className="font-semibold text-xs uppercase tracking-wider text-indigo-600 mb-2">
+                      <h6 className="font-semibold text-xs uppercase tracking-wider text-slate-600 mb-2">
                         Gap Analysis
                       </h6>
-                      <p className="text-sm text-slate-700 leading-relaxed">{matchResult.gap_analysis}</p>
+                      <p className="text-sm text-slate-700 leading-relaxed">{matchResult.ai_deduction}</p>
                     </div>
 
                     {/* Skills breakdown */}
@@ -402,8 +428,8 @@ export default function CandidateProfile() {
                           Verified skills
                         </h6>
                         <div className="flex flex-wrap gap-1.5">
-                          {matchResult.matched_skills.length > 0
-                            ? matchResult.matched_skills.map((s) => (
+                          {matchResult.verified_skills.length > 0
+                            ? matchResult.verified_skills.map((s) => (
                                 <span
                                   key={s}
                                   className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] px-2.5 py-1 rounded-md font-medium"
@@ -435,14 +461,6 @@ export default function CandidateProfile() {
                         </div>
                       </div>
                     </div>
-
-                    {/* Re-run button */}
-                    <button
-                      className="w-full text-sm font-semibold text-indigo-600 bg-white border border-indigo-200 rounded-lg px-4 py-2 hover:bg-indigo-50 hover:border-indigo-300 transition-colors mt-8 mb-2 shadow-sm"
-                      onClick={() => setMatchResult(null)}
-                    >
-                      Clear and re-run analysis
-                    </button>
 
                   </div>
                 )}
