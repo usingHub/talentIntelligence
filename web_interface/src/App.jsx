@@ -11,7 +11,7 @@ import ExtensionSetup from "./pages/ExtensionSetup";
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-vh-100 bg-light">
+      <div className="min-h-screen bg-slate-50">
         <Navbar />
         <main>
           <Routes>

@@ -27,10 +27,16 @@ function normaliseCandidate(raw) {
 // ---------------------------------------------------------------------------
 // Score ring colour
 // ---------------------------------------------------------------------------
-function scoreColor(score) {
-  if (score >= 80) return "success";
-  if (score >= 60) return "warning";
-  return "danger";
+function getScoreClasses(score) {
+  if (score >= 80) return "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20";
+  if (score >= 60) return "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20";
+  return "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/20";
+}
+
+function getSolidScoreClasses(score) {
+  if (score >= 80) return "bg-emerald-500 text-white shadow-sm ring-1 ring-inset ring-emerald-600/20";
+  if (score >= 60) return "bg-amber-500 text-white shadow-sm ring-1 ring-inset ring-amber-600/20";
+  return "bg-rose-500 text-white shadow-sm ring-1 ring-inset ring-rose-600/20";
 }
 
 export default function CandidateProfile() {
@@ -112,11 +118,12 @@ export default function CandidateProfile() {
   // ── Loading state ─────────────────────────────────────────────────────────
   if (!candidate) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
-        <div className="text-center text-muted">
-          <div className="spinner-border text-primary mb-3" role="status" />
-          <p className="small">Loading candidate profile...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <svg className="animate-spin h-8 w-8 text-indigo-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p className="text-slate-500 text-sm">Loading candidate profile...</p>
       </div>
     );
   }
@@ -129,19 +136,19 @@ export default function CandidateProfile() {
     .toUpperCase();
 
   return (
-    <div className="container-fluid px-4 py-4">
+    <div className="w-full px-6 py-8">
 
       {/* ── Header ── */}
-      <div className="d-flex align-items-center gap-3 mb-4">
+      <div className="flex items-center gap-4 mb-8">
         <button
-          className="btn btn-outline-secondary btn-sm"
+          className="text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg px-4 py-2 hover:bg-slate-50 transition-colors shadow-sm"
           onClick={() => navigate(-1)}
         >
-          Back
+          &larr; Back
         </button>
         <div>
-          <h4 className="fw-bold mb-0">Candidate Intelligence</h4>
-          <p className="text-muted small mb-0">
+          <h4 className="text-2xl font-bold text-slate-900 tracking-tight">Candidate Intelligence</h4>
+          <p className="text-slate-500 text-sm mt-0.5">
             Detailed profile and role gap analysis
           </p>
         </div>
@@ -149,299 +156,297 @@ export default function CandidateProfile() {
 
       {/* ── Error banner ── */}
       {error && (
-        <div className="alert alert-danger alert-dismissible d-flex align-items-center gap-2 mb-4">
-          <strong>Error:</strong> {error}
+        <div className="bg-rose-50 border-l-4 border-rose-500 p-4 mb-6 relative rounded-r-lg shadow-sm" role="alert">
+          <div className="flex items-center gap-3">
+            <span className="text-rose-500 text-lg">⚠️</span>
+            <div>
+              <strong className="font-semibold text-rose-900">Error:</strong>
+              <span className="text-rose-700 ml-1">{error}</span>
+            </div>
+          </div>
           <button
-            className="btn-close ms-auto"
+            type="button"
+            className="absolute top-4 right-4 text-rose-500 hover:text-rose-700 transition-colors"
             onClick={() => setError("")}
-          />
+          >
+            ✕
+          </button>
         </div>
       )}
 
-      <div className="row g-4">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
 
         {/* ── Left column: Candidate details ── */}
-        <div className="col-12 col-xl-4">
-          <div className="card border-0 shadow-sm h-100">
-            <div className="card-body">
+        <div className="xl:col-span-4">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 h-full p-6">
 
-              {/* Profile header */}
-              <div className="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
-                <div
-                  className="rounded-circle bg-primary text-white d-flex align-items-center
-                             justify-content-center fw-bold flex-shrink-0"
-                  style={{ width: 64, height: 64, fontSize: 22 }}
-                >
-                  {initials}
+            {/* Profile header */}
+            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+              <div
+                className="w-16 h-16 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xl shrink-0"
+              >
+                {initials}
+              </div>
+              <div>
+                <h5 className="font-bold text-lg text-slate-900 mb-1">{candidate.name}</h5>
+                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                  candidate.status === "Processed" 
+                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20"
+                    : "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20"
+                }`}>
+                  {candidate.status}
+                </span>
+                {candidate.fileName && (
+                  <div className="text-slate-400 text-xs mt-1.5 break-all">
+                    {candidate.fileName}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bio details */}
+            <div className="mb-6">
+              <h6 className="font-semibold text-slate-400 text-xs uppercase tracking-wider mb-3">
+                Background
+              </h6>
+              <div className="flex flex-col gap-3 text-sm">
+                <div className="flex justify-between items-start">
+                  <span className="text-slate-500 shrink-0">Experience</span>
+                  <span className="font-semibold text-slate-900">{candidate.experience} yrs</span>
                 </div>
-                <div>
-                  <h5 className="fw-bold mb-1">{candidate.name}</h5>
-                  <span className="badge bg-success-subtle text-success rounded-pill">
-                    {candidate.status}
+                <div className="flex justify-between items-start gap-3">
+                  <span className="text-slate-500 shrink-0">Education</span>
+                  <span className="font-semibold text-slate-900 text-right">{candidate.education}</span>
+                </div>
+                <div className="flex justify-between items-start">
+                  <span className="text-slate-500 shrink-0">Email</span>
+                  <span className="font-semibold text-slate-900 text-right break-all">
+                    {candidate.email}
                   </span>
-                  {candidate.fileName && (
-                    <div className="text-muted mt-1" style={{ fontSize: 11 }}>
-                      {candidate.fileName}
-                    </div>
-                  )}
                 </div>
               </div>
+            </div>
 
-              {/* Bio details */}
-              <div className="mb-4">
-                <h6 className="fw-semibold text-muted small text-uppercase mb-3">
-                  Background
-                </h6>
-                <div className="d-flex flex-column gap-2 small">
-                  <div className="d-flex justify-content-between align-items-start">
-                    <span className="text-muted flex-shrink-0">Experience</span>
-                    <span className="fw-semibold">{candidate.experience} yrs</span>
-                  </div>
-                  <div className="d-flex justify-content-between align-items-start gap-2">
-                    <span className="text-muted flex-shrink-0">Education</span>
-                    <span className="fw-semibold text-end">{candidate.education}</span>
-                  </div>
-                  <div className="d-flex justify-content-between align-items-start">
-                    <span className="text-muted flex-shrink-0">Email</span>
-                    <span className="fw-semibold text-end"
-                      style={{ wordBreak: "break-all" }}>
-                      {candidate.email}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Extracted skills */}
-              <div className="mb-4">
-                <h6 className="fw-semibold text-muted small text-uppercase mb-3">
+            {/* Extracted skills */}
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <h6 className="font-semibold text-slate-400 text-xs uppercase tracking-wider mb-0">
                   Extracted Skills
-                  <span className="badge bg-primary rounded-pill ms-2" style={{ fontSize: 10 }}>
-                    {candidate.skills.length}
-                  </span>
                 </h6>
-                <div className="d-flex flex-wrap gap-1">
-                  {candidate.skills.map((skill) => (
+                <span className="bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-full text-[10px]">
+                  {candidate.skills.length}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {candidate.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="bg-slate-50 border border-slate-200 text-slate-700 text-[11px] px-2.5 py-1 rounded-md font-medium"
+                  >
+                    {skill}
+                  </span>
+                ))}
+                {candidate.skills.length === 0 && (
+                  <span className="text-slate-400 text-sm italic">No skills extracted</span>
+                )}
+              </div>
+            </div>
+
+            {/* Already flagged missing skills (from parse step) */}
+            {candidate.missingSkills.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <h6 className="font-semibold text-slate-400 text-xs uppercase tracking-wider mb-0">
+                    Flagged Gaps
+                  </h6>
+                  <span className="bg-rose-100 text-rose-700 font-semibold px-2 py-0.5 rounded-full text-[10px]">
+                    {candidate.missingSkills.length}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {candidate.missingSkills.map((skill) => (
                     <span
                       key={skill}
-                      className="badge bg-light text-dark border py-2 px-2"
-                      style={{ fontSize: 11 }}
+                      className="bg-rose-50 border border-rose-200 text-rose-700 text-[11px] px-2.5 py-1 rounded-md font-medium"
                     >
                       {skill}
                     </span>
                   ))}
-                  {candidate.skills.length === 0 && (
-                    <span className="text-muted small">No skills extracted</span>
-                  )}
                 </div>
               </div>
+            )}
 
-              {/* Already flagged missing skills (from parse step) */}
-              {candidate.missingSkills.length > 0 && (
-                <div>
-                  <h6 className="fw-semibold text-muted small text-uppercase mb-3">
-                    Flagged Gaps
-                    <span className="badge bg-danger rounded-pill ms-2" style={{ fontSize: 10 }}>
-                      {candidate.missingSkills.length}
-                    </span>
-                  </h6>
-                  <div className="d-flex flex-wrap gap-1">
-                    {candidate.missingSkills.map((skill) => (
-                      <span
-                        key={skill}
-                        className="badge bg-danger-subtle text-danger border border-danger-subtle py-2 px-2"
-                        style={{ fontSize: 11 }}
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
+            {/* Parse-time match score if available */}
+            {candidate.matchScore !== null && (
+              <div className="mt-2 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-semibold text-slate-700">Parse-time score</span>
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${getScoreClasses(candidate.matchScore)}`}>
+                    {candidate.matchScore}%
+                  </span>
                 </div>
-              )}
+                {candidate.recommendation && (
+                  <p className="text-xs text-slate-500 mt-2 italic leading-relaxed">
+                    "{candidate.recommendation}"
+                  </p>
+                )}
+              </div>
+            )}
 
-              {/* Parse-time match score if available */}
-              {candidate.matchScore !== null && (
-                <div className="mt-4 p-3 bg-light rounded border">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <span className="small fw-semibold text-muted">Parse-time score</span>
-                    <span className={`badge bg-${scoreColor(candidate.matchScore)} rounded-pill fs-6`}>
-                      {candidate.matchScore}%
-                    </span>
-                  </div>
-                  {candidate.recommendation && (
-                    <p className="small text-muted mt-2 mb-0">
-                      {candidate.recommendation}
-                    </p>
-                  )}
-                </div>
-              )}
-
-            </div>
           </div>
         </div>
 
         {/* ── Right column: Match engine ── */}
-        <div className="col-12 col-xl-8">
-          <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom py-3">
-              <h6 className="fw-semibold mb-0">Semantic Match Engine</h6>
-              <p className="text-muted small mb-0">
+        <div className="xl:col-span-8">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 h-full flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/50 rounded-t-xl">
+              <h6 className="font-semibold text-slate-900">Semantic Match Engine</h6>
+              <p className="text-slate-500 text-xs mt-0.5">
                 Paste a job description to run the Match Agent against this candidate
               </p>
             </div>
 
-            <div className="card-body p-0">
-              <div className="row g-0 h-100">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-12 min-h-0">
 
-                {/* Input side */}
-                <div className="col-12 col-md-5 p-4 border-end">
-                  <label className="form-label fw-semibold small text-dark">
-                    Target role requirements
-                  </label>
-                  <textarea
-                    className="form-control bg-light border-0 mb-3"
-                    rows={9}
-                    placeholder="e.g. We are looking for a backend engineer proficient in Python, FastAPI, and container orchestration using Kubernetes..."
-                    value={jobDescription}
-                    onChange={(e) => setJobDescription(e.target.value)}
-                  />
-                  <button
-                    className="btn btn-primary w-100 fw-semibold"
-                    onClick={runMatchEngine}
-                    disabled={!jobDescription.trim() || isMatching}
-                  >
-                    {isMatching ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status" />
-                        Analysing...
-                      </>
-                    ) : (
-                      "Run Match Engine"
-                    )}
-                  </button>
-                </div>
-
-                {/* Result side */}
-                <div className="col-12 col-md-7 p-4 bg-light">
-
-                  {/* Empty state */}
-                  {!matchResult && !isMatching && (
-                    <div
-                      className="h-100 d-flex flex-column align-items-center
-                                 justify-content-center text-muted text-center"
-                      style={{ minHeight: 300 }}
-                    >
-                      <div style={{ fontSize: 40, opacity: 0.3 }} className="mb-3">
-                        🎯
-                      </div>
-                      <h6 className="fw-semibold">No analysis yet</h6>
-                      <p className="small mb-0">
-                        Paste a job description and run the engine to see the gap analysis.
-                      </p>
-                    </div>
+              {/* Input side */}
+              <div className="md:col-span-5 p-6 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col relative">
+                <label className="block font-semibold text-sm text-slate-900 mb-2">
+                  Target role requirements
+                </label>
+                <textarea
+                  className="flex-1 w-full bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow resize-none mb-4"
+                  placeholder="e.g. We are looking for a backend engineer proficient in Python, FastAPI, and container orchestration using Kubernetes..."
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                />
+                <button
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm hover:-translate-y-[1px] transition-all disabled:bg-slate-300 disabled:shadow-none disabled:-translate-y-0 disabled:text-slate-500 flex justify-center items-center gap-2"
+                  onClick={runMatchEngine}
+                  disabled={!jobDescription.trim() || isMatching}
+                >
+                  {isMatching ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Analysing...
+                    </>
+                  ) : (
+                    "Run Match Engine"
                   )}
+                </button>
+              </div>
 
-                  {/* Processing state */}
-                  {isMatching && (
-                    <div
-                      className="h-100 d-flex flex-column align-items-center
-                                 justify-content-center text-center"
-                      style={{ minHeight: 300 }}
-                    >
-                      <div className="spinner-border text-primary mb-3" role="status" />
-                      <h6 className="fw-semibold">Multi-agent analysis running</h6>
-                      <p className="text-muted small mb-0">
-                        Normalize Agent → Match Agent → Gap Analysis
-                      </p>
+              {/* Result side */}
+              <div className="md:col-span-7 p-6 bg-slate-50/50 flex flex-col">
+
+                {/* Empty state */}
+                {!matchResult && !isMatching && (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+                    <div className="text-5xl opacity-30 mb-4 text-slate-400">
+                      🎯
                     </div>
-                  )}
+                    <h6 className="font-semibold text-slate-900 mb-2">No analysis yet</h6>
+                    <p className="text-sm text-slate-500 max-w-xs">
+                      Paste a job description and run the engine to see the gap analysis.
+                    </p>
+                  </div>
+                )}
 
-                  {/* Match results */}
-                  {matchResult && !isMatching && (
-                    <div>
+                {/* Processing state */}
+                {isMatching && (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+                    <svg className="animate-spin h-10 w-10 text-indigo-500 mb-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <h6 className="font-semibold text-slate-900 mb-2">Multi-agent analysis running</h6>
+                    <p className="text-sm text-slate-500">
+                      Normalize Agent → Match Agent → Gap Analysis
+                    </p>
+                  </div>
+                )}
 
-                      {/* Score ring */}
-                      <div className="d-flex align-items-center gap-3 mb-4">
-                        <div
-                          className={`rounded-circle d-flex align-items-center justify-content-center
-                                     fw-bold text-white bg-${scoreColor(matchResult.match_score)}
-                                     flex-shrink-0`}
-                          style={{ width: 72, height: 72, fontSize: 20 }}
-                        >
-                          {matchResult.match_score}%
-                        </div>
-                        <div>
-                          <h5 className="fw-bold mb-1">Match Score</h5>
-                          <p className="text-muted small mb-0">
-                            {matchResult.recommendation}
-                          </p>
-                        </div>
-                      </div>
+                {/* Match results */}
+                {matchResult && !isMatching && (
+                  <div className="flex-1 overflow-y-auto pr-2">
 
-                      {/* Gap analysis text */}
-                      <div className="bg-white rounded border p-3 mb-4 shadow-sm">
-                        <h6 className="fw-semibold small text-primary mb-2">
-                          Gap Analysis
-                        </h6>
-                        <p className="small mb-0">{matchResult.gap_analysis}</p>
-                      </div>
-
-                      {/* Skills breakdown */}
-                      <div className="row g-3">
-                        <div className="col-12">
-                          <h6 className="fw-semibold small text-success mb-2">
-                            Verified skills
-                          </h6>
-                          <div className="d-flex flex-wrap gap-1">
-                            {matchResult.matched_skills.length > 0
-                              ? matchResult.matched_skills.map((s) => (
-                                  <span
-                                    key={s}
-                                    className="badge bg-success-subtle text-success
-                                               border border-success-subtle"
-                                    style={{ fontSize: 11 }}
-                                  >
-                                    {s}
-                                  </span>
-                                ))
-                              : <span className="text-muted small">None matched</span>
-                            }
-                          </div>
-                        </div>
-
-                        <div className="col-12">
-                          <h6 className="fw-semibold small text-danger mb-2">
-                            Missing skills
-                          </h6>
-                          <div className="d-flex flex-wrap gap-1">
-                            {matchResult.missing_skills.length > 0
-                              ? matchResult.missing_skills.map((s) => (
-                                  <span
-                                    key={s}
-                                    className="badge bg-danger-subtle text-danger
-                                               border border-danger-subtle"
-                                    style={{ fontSize: 11 }}
-                                  >
-                                    {s}
-                                  </span>
-                                ))
-                              : <span className="text-muted small">No critical gaps</span>
-                            }
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Re-run button */}
-                      <button
-                        className="btn btn-outline-primary btn-sm mt-4 w-100"
-                        onClick={() => setMatchResult(null)}
+                    {/* Score ring */}
+                    <div className="flex items-center gap-4 mb-6">
+                      <div
+                        className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-xl shrink-0 ${getSolidScoreClasses(matchResult.match_score)}`}
                       >
-                        Clear and re-run
-                      </button>
-
+                        {matchResult.match_score}%
+                      </div>
+                      <div>
+                        <h5 className="font-bold text-slate-900 mb-1">Match Score</h5>
+                        <p className="text-slate-500 text-sm">
+                          {matchResult.recommendation}
+                        </p>
+                      </div>
                     </div>
-                  )}
 
-                </div>
+                    {/* Gap analysis text */}
+                    <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6 shadow-sm">
+                      <h6 className="font-semibold text-xs uppercase tracking-wider text-indigo-600 mb-2">
+                        Gap Analysis
+                      </h6>
+                      <p className="text-sm text-slate-700 leading-relaxed">{matchResult.gap_analysis}</p>
+                    </div>
+
+                    {/* Skills breakdown */}
+                    <div className="grid grid-cols-1 gap-6">
+                      <div>
+                        <h6 className="font-semibold text-xs uppercase tracking-wider text-emerald-600 mb-3 border-b border-emerald-100 pb-2">
+                          Verified skills
+                        </h6>
+                        <div className="flex flex-wrap gap-1.5">
+                          {matchResult.matched_skills.length > 0
+                            ? matchResult.matched_skills.map((s) => (
+                                <span
+                                  key={s}
+                                  className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] px-2.5 py-1 rounded-md font-medium"
+                                >
+                                  {s}
+                                </span>
+                              ))
+                            : <span className="text-slate-400 text-sm italic">None matched</span>
+                          }
+                        </div>
+                      </div>
+
+                      <div>
+                        <h6 className="font-semibold text-xs uppercase tracking-wider text-rose-600 mb-3 border-b border-rose-100 pb-2">
+                          Missing skills
+                        </h6>
+                        <div className="flex flex-wrap gap-1.5">
+                          {matchResult.missing_skills.length > 0
+                            ? matchResult.missing_skills.map((s) => (
+                                <span
+                                  key={s}
+                                  className="bg-rose-50 border border-rose-200 text-rose-700 text-[11px] px-2.5 py-1 rounded-md font-medium"
+                                >
+                                  {s}
+                                </span>
+                              ))
+                            : <span className="text-slate-400 text-sm italic">No critical gaps</span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Re-run button */}
+                    <button
+                      className="w-full text-sm font-semibold text-indigo-600 bg-white border border-indigo-200 rounded-lg px-4 py-2 hover:bg-indigo-50 hover:border-indigo-300 transition-colors mt-8 mb-2 shadow-sm"
+                      onClick={() => setMatchResult(null)}
+                    >
+                      Clear and re-run analysis
+                    </button>
+
+                  </div>
+                )}
+
               </div>
             </div>
           </div>
