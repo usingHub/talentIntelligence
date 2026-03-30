@@ -21,8 +21,9 @@ export default function Navbar() {
         <span className="navbar-toggler-icon" />
       </button>
 
+      {/* Added align-items-center to keep the button vertically centered with text links */}
       <div className="collapse navbar-collapse" id="navbarNav">
-        <ul className="navbar-nav ms-auto gap-1">
+        <ul className="navbar-nav ms-auto gap-2 align-items-center">
           <li className="nav-item">
             <Link className={isActive("/")} to="/">
               Dashboard
@@ -47,6 +48,13 @@ export default function Navbar() {
             >
               API Docs ↗
             </a>
+          </li>
+          
+          {/* ── High-Visibility CTA Button ── */}
+          <li className="nav-item ms-lg-3">
+            <Link className="btn btn-primary btn-sm fw-semibold px-3 shadow-sm d-flex align-items-center gap-2" to="/extension">
+              <span className="fs-6">🧩</span> Get Extension
+            </Link>
           </li>
         </ul>
       </div>

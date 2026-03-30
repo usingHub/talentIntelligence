@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import CandidateProfile from "./pages/CandidateProfile";
 import TaxonomyBrowser from "./pages/TaxonomyBrowser";
+import ExtensionSetup from "./pages/ExtensionSetup";
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/upload" element={<Upload />} />
             <Route path="/candidate/:id" element={<CandidateProfile />} />
             <Route path="/taxonomy" element={<TaxonomyBrowser />} />
+            <Route path="/extension" element={<ExtensionSetup />} />
             
           </Routes>
         </main>
