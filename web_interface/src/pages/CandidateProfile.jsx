@@ -81,7 +81,7 @@ export default function CandidateProfile() {
     setError("");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/match", {
+      const response = await fetch("https://talentiq-backend-7dk9.onrender.com/api/v1/match", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

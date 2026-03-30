@@ -66,7 +66,7 @@ export default function Upload() {
     });
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/parse/batch", {
+      const response = await fetch("https://talentiq-backend-7dk9.onrender.com/api/v1/parse/batch", {
         method: "POST",
         body: formData,
       });
