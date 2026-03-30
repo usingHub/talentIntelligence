@@ -42,7 +42,7 @@ export default function Navbar() {
           <li className="nav-item">
             <a
               className="nav-link"
-              href="http://localhost:8000/docs"
+              href="https://talentiq-backend-7dk9.onrender.com/docs"
               target="_blank"
               rel="noreferrer"
             >
