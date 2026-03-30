@@ -4,7 +4,7 @@ import Dashboard from "./pages/Dashboard";
 
 // these will be added as we build each page
 import Upload from "./pages/Upload";
-// import CandidateProfile from "./pages/CandidateProfile";
+import CandidateProfile from "./pages/CandidateProfile";
 // import TaxonomyBrowser from "./pages/TaxonomyBrowser";
 
 export default function App() {
@@ -16,9 +16,10 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/upload" element={<Upload />} />
+            <Route path="/candidate/:id" element={<CandidateProfile />} />
             {/* uncomment as we build each page:
             
-            <Route path="/candidate/:id" element={<CandidateProfile />} />
+            
             <Route path="/taxonomy" element={<TaxonomyBrowser />} />
             */}
           </Routes>
