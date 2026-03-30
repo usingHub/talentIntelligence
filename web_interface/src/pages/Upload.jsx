@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTalent } from "../context/TalentContext";
 
 export default function Upload() {
   const navigate = useNavigate();
-  const [jobDescription, setJobDescription] = useState("");
+  const { jobDescription, setJobDescription, uploadedCandidates, setUploadedCandidates } = useTalent();
+  
   const [files, setFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [results, setResults] = useState([]);
   const [error, setError] = useState("");
 
   // ── Drag & Drop Handlers ──────────────────────────────────────────────────
@@ -30,7 +31,6 @@ export default function Upload() {
   const handleFileSelect = (e) => {
     const selected = Array.from(e.target.files);
     setFiles((prev) => [...prev, ...selected]);
-    // reset input so same file can be re-added after removal
     e.target.value = "";
   };
 
@@ -40,26 +40,24 @@ export default function Upload() {
 
   const clearAll = () => {
     setFiles([]);
-    setResults([]);
+    setUploadedCandidates([]);
     setError("");
   };
 
   // ── Score badge colour ────────────────────────────────────────────────────
-  const scoreBadgeColor = (score) => {
-    if (score >= 85) return "success";
-    if (score >= 65) return "warning";
-    return "danger";
+  const getBadgeClasses = (score) => {
+    if (score >= 85) return "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20";
+    if (score >= 65) return "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20";
+    return "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-600/20";
   };
 
   // ── API Submission — uses /api/v1/parse/batch correctly ──────────────────
   const handleProcessBatch = async () => {
     if (files.length === 0) return;
     setIsProcessing(true);
-    setResults([]);
+    setUploadedCandidates([]);
     setError("");
 
-    // Build ONE FormData with ALL files attached under the key "files"
-    // This matches FastAPI's: files: List[UploadFile] = File(...)
     const formData = new FormData();
     files.forEach((file) => {
       formData.append("files", file);
@@ -78,7 +76,6 @@ export default function Upload() {
 
       const data = await response.json();
 
-      // data.results is an array of { filename, status, data: { candidate fields } }
       const formatted = data.results.map((item, idx) => ({
         id: `candidate-${idx}-${Date.now()}`,
         fileName: item.filename,
@@ -86,7 +83,7 @@ export default function Upload() {
         ...item.data,
       }));
 
-      setResults(formatted);
+      setUploadedCandidates(formatted);
       setFiles([]);
     } catch (err) {
       console.error("Batch processing error:", err);
@@ -102,18 +99,21 @@ export default function Upload() {
   };
 
   return (
-    <div className="container-fluid px-4 py-4">
+    <div className="w-full px-6 py-8">
 
       {/* ── Page Header ── */}
-      <div className="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-2">
+      <div className="flex flex-wrap items-center justify-between mb-8 gap-4">
         <div>
-          <h4 className="fw-bold mb-0">Bulk Candidate Processing</h4>
-          <p className="text-muted small mb-0">
+          <h4 className="text-2xl font-bold text-slate-900 tracking-tight">Bulk Candidate Processing</h4>
+          <p className="text-slate-500 text-sm mt-1">
             Upload multiple resumes and map them against a job description simultaneously.
           </p>
         </div>
-        {(results.length > 0 || files.length > 0) && (
-          <button className="btn btn-outline-secondary btn-sm" onClick={clearAll}>
+        {(uploadedCandidates.length > 0 || files.length > 0) && (
+          <button 
+            className="text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg px-4 py-2 hover:bg-slate-50 transition-colors shadow-sm"
+            onClick={clearAll}
+          >
             Clear All
           </button>
         )}
@@ -121,62 +121,64 @@ export default function Upload() {
 
       {/* ── Error Banner ── */}
       {error && (
-        <div className="alert alert-danger alert-dismissible d-flex align-items-center gap-2 mb-4" role="alert">
-          <strong>Error:</strong> {error}
+        <div className="bg-rose-50 border-l-4 border-rose-500 p-4 mb-6 relative rounded-r-lg shadow-sm" role="alert">
+          <div className="flex items-center gap-3">
+            <span className="text-rose-500 text-lg">⚠️</span>
+            <div>
+              <strong className="font-semibold text-rose-900">Error:</strong>
+              <span className="text-rose-700 ml-1">{error}</span>
+            </div>
+          </div>
           <button
             type="button"
-            className="btn-close ms-auto"
+            className="absolute top-4 right-4 text-rose-500 hover:text-rose-700 transition-colors"
             onClick={() => setError("")}
-          />
+          >
+            ✕
+          </button>
         </div>
       )}
 
-      <div className="row g-4">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
 
         {/* ── Left Column: Inputs ── */}
-        <div className="col-12 col-xl-5">
-          <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom py-3">
-              <h6 className="fw-semibold mb-0">Upload Configuration</h6>
+        <div className="xl:col-span-5">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 h-full flex flex-col">
+            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/50 rounded-t-xl">
+              <h6 className="font-semibold text-slate-900">Upload Configuration</h6>
             </div>
-            <div className="card-body d-flex flex-column gap-4">
+            
+            <div className="p-6 flex flex-col gap-6 flex-1">
 
               {/* Job Description */}
               <div>
-                <label className="form-label fw-semibold small text-dark">
+                <label className="block font-semibold text-sm text-slate-900 mb-2">
                   Target Job Description
-                  <span className="text-muted fw-normal ms-1">(optional)</span>
                 </label>
                 <textarea
-                  className="form-control bg-light border-0"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
                   rows={4}
                   placeholder="Paste the job requirements, required skills, and responsibilities here..."
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                 />
-                <div className="form-text">
+                <div className="text-xs text-slate-500 mt-2">
                   Used by the Match Agent to calculate fit scores.
                 </div>
               </div>
 
               {/* Drag & Drop Zone */}
               <div>
-                <label className="form-label fw-semibold small text-dark">
+                <label className="block font-semibold text-sm text-slate-900 mb-2">
                   Upload Resumes
-                  <span className="text-muted fw-normal ms-1">(PDF, DOCX, TXT)</span>
+                  <span className="text-slate-400 font-normal ml-1">(PDF, DOCX, TXT)</span>
                 </label>
                 <div
-                  className={`rounded p-4 text-center ${
+                  className={`rounded-xl p-8 text-center border-2 border-dashed transition-all cursor-pointer ${
                     isDragging
-                      ? "border border-primary bg-primary-subtle"
-                      : "bg-light border"
+                      ? "border-indigo-500 bg-indigo-50/50"
+                      : "border-slate-300 bg-slate-50 hover:bg-slate-100/50 hover:border-slate-400"
                   }`}
-                  style={{
-                    borderStyle: "dashed",
-                    borderWidth: "2px",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
@@ -185,20 +187,20 @@ export default function Upload() {
                   <input
                     type="file"
                     id="fileInput"
-                    className="d-none"
+                    className="hidden"
                     multiple
                     accept=".pdf,.docx,.txt"
                     onChange={handleFileSelect}
                   />
-                  <div className="mb-2" style={{ fontSize: 32 }}>
+                  <div className="text-4xl mb-3">
                     {isDragging ? "⬇️" : "📄"}
                   </div>
-                  <p className="fw-semibold text-primary small mb-1">
+                  <p className="font-semibold text-indigo-600 text-sm mb-1">
                     {isDragging
                       ? "Drop files here"
                       : "Click to browse or drag and drop"}
                   </p>
-                  <p className="text-muted" style={{ fontSize: 12 }}>
+                  <p className="text-slate-500 text-xs">
                     Max 20 files per batch
                   </p>
                 </div>
@@ -206,37 +208,36 @@ export default function Upload() {
 
               {/* File Queue */}
               {files.length > 0 && (
-                <div>
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="fw-semibold small">
+                <div className="flex-1 flex flex-col min-h-0">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="font-semibold text-sm text-slate-900">
                       Queue
                     </span>
-                    <span className="badge bg-primary rounded-pill">
+                    <span className="bg-indigo-100 text-indigo-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
                       {files.length} file{files.length > 1 ? "s" : ""}
                     </span>
                   </div>
                   <div
-                    className="d-flex flex-column gap-2 overflow-auto"
+                    className="flex flex-col gap-2 overflow-y-auto pr-1"
                     style={{ maxHeight: "180px" }}
                   >
                     {files.map((file, idx) => (
                       <div
                         key={idx}
-                        className="d-flex justify-content-between align-items-center bg-white border rounded px-3 py-2"
+                        className="flex justify-between items-center bg-white border border-slate-200 rounded-lg px-4 py-3 shadow-sm"
                       >
-                        <div style={{ minWidth: 0 }}>
+                        <div className="min-w-0 pr-4">
                           <div
-                            className="small fw-semibold text-truncate"
-                            style={{ maxWidth: "200px" }}
+                            className="text-sm font-semibold text-slate-900 truncate"
                           >
                             {file.name}
                           </div>
-                          <div className="text-muted" style={{ fontSize: 11 }}>
+                          <div className="text-xs text-slate-500 mt-0.5">
                             {(file.size / 1024).toFixed(1)} KB
                           </div>
                         </div>
                         <button
-                          className="btn btn-sm text-danger border-0 p-1 ms-2"
+                          className="text-slate-400 hover:text-rose-500 transition-colors p-1"
                           onClick={() => removeFile(idx)}
                           title="Remove"
                         >
@@ -250,17 +251,26 @@ export default function Upload() {
 
               {/* Process Button */}
               <button
-                className="btn btn-primary w-100 py-2 fw-semibold mt-auto"
+                className={`w-full py-3 px-4 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 mt-auto ${
+                  files.length === 0 || isProcessing || jobDescription.trim() === ""
+                    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                    : "bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 hover:-translate-y-[1px]"
+                }`}
                 onClick={handleProcessBatch}
-                disabled={files.length === 0 || isProcessing}
+                disabled={files.length === 0 || isProcessing || jobDescription.trim() === ""}
               >
                 {isProcessing ? (
                   <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status" />
-                    Processing {files.length} resume{files.length > 1 ? "s" : ""}...
+                    <svg className="animate-spin h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span className="text-indigo-600">Processing {files.length} resume{files.length > 1 ? "s" : ""}...</span>
                   </>
                 ) : files.length === 0 ? (
                   "Upload files to begin"
+                ) : jobDescription.trim() === "" ? (
+                  "Enter a Job Description"
                 ) : (
                   `Process ${files.length} Resume${files.length > 1 ? "s" : ""}`
                 )}
@@ -271,27 +281,57 @@ export default function Upload() {
         </div>
 
         {/* ── Right Column: Results ── */}
-        <div className="col-12 col-xl-7">
-          <div className="card border-0 shadow-sm h-100">
-            <div className="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
-              <h6 className="fw-semibold mb-0">Batch Results</h6>
-              {results.length > 0 && (
-                <span className="badge bg-success rounded-pill">
-                  {results.length} processed
-                </span>
-              )}
+        <div className="xl:col-span-7">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 h-full flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center rounded-t-xl">
+              <h6 className="font-semibold text-slate-900">Batch Results</h6>
+              <div className="flex items-center gap-3">
+                {uploadedCandidates.length > 0 && (
+                  <button
+                    className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 bg-white border border-indigo-200 rounded-lg px-2.5 py-1.5 hover:bg-indigo-50 hover:border-indigo-300 transition-colors shadow-sm"
+                    onClick={() => {
+                      if (uploadedCandidates.length === 0) return;
+                      const headers = ["Candidate ID", "Name", "Experience", "Status", "Score", "FileName"];
+                      const rows = uploadedCandidates.map(c => [
+                        c.id, 
+                        c.candidate_name, 
+                        c.experience_years, 
+                        c.status, 
+                        c.overall_match_score || "", 
+                        c.fileName
+                      ]);
+                      const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+                      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement("a");
+                      link.setAttribute("href", url);
+                      link.setAttribute("download", "candidates_export.csv");
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                  >
+                    📥 Export Batch to CSV
+                  </button>
+                )}
+                {uploadedCandidates.length > 0 && (
+                  <span className="bg-emerald-100 text-emerald-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                    {uploadedCandidates.length} processed
+                  </span>
+                )}
+              </div>
             </div>
 
-            <div className="card-body p-0">
+            <div className="flex-1 flex flex-col p-0 overflow-y-auto">
 
               {/* Empty state — nothing uploaded yet */}
-              {results.length === 0 && !isProcessing && (
-                <div className="text-center text-muted py-5 px-4">
-                  <div className="mb-3" style={{ fontSize: 48, opacity: 0.3 }}>
+              {uploadedCandidates.length === 0 && !isProcessing && (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-12">
+                  <div className="text-6xl opacity-30 mb-4">
                     ⚙️
                   </div>
-                  <h6 className="fw-semibold">Awaiting batch</h6>
-                  <p className="small mb-0">
+                  <h6 className="text-lg font-semibold text-slate-900 mb-2">Awaiting batch</h6>
+                  <p className="text-sm text-slate-500 max-w-sm">
                     Upload resumes and click Process to see AI-extracted profiles,
                     skill mappings, and match scores here.
                   </p>
@@ -300,36 +340,38 @@ export default function Upload() {
 
               {/* Processing state */}
               {isProcessing && (
-                <div className="text-center py-5 px-4">
-                  <div className="spinner-border text-primary mb-3" role="status" />
-                  <h6 className="fw-semibold">Running agents...</h6>
-                  <p className="text-muted small mb-0">
+                <div className="flex-1 flex flex-col items-center justify-center py-16">
+                  <svg className="animate-spin h-10 w-10 text-indigo-500 mb-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <h6 className="text-lg font-semibold text-slate-900 mb-2">Running agents...</h6>
+                  <p className="text-sm text-slate-500">
                     Parse Agent → Normalize Agent → Match Agent
                   </p>
                 </div>
               )}
 
               {/* Results table */}
-              {results.length > 0 && !isProcessing && (
-                <div className="table-responsive">
-                  <table className="table table-hover align-middle mb-0">
-                    <thead className="table-light">
+              {uploadedCandidates.length > 0 && !isProcessing && (
+                <div className="overflow-x-auto w-full">
+                  <table className="w-full text-left text-sm whitespace-nowrap">
+                    <thead className="bg-slate-50 text-slate-500 font-semibold text-xs uppercase tracking-wider border-b border-slate-200">
                       <tr>
-                        <th className="ps-3 fw-semibold small text-muted">Candidate</th>
-                        <th className="fw-semibold small text-muted">Skills Found</th>
-                        <th className="fw-semibold small text-muted">Missing</th>
-                        <th className="fw-semibold small text-muted">Score</th>
-                        <th className="fw-semibold small text-muted">Action</th>
+                        <th className="px-6 py-3">Candidate</th>
+                        <th className="px-6 py-3">Skills Found</th>
+                        <th className="px-6 py-3">Missing</th>
+                        <th className="px-6 py-3">Score</th>
+                        <th className="px-6 py-3">Action</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      {results.map((res) => (
-                        <tr key={res.id}>
-                          <td className="ps-3">
-                            <div className="d-flex align-items-center gap-2">
+                    <tbody className="divide-y divide-slate-100">
+                      {uploadedCandidates.map((res) => (
+                        <tr key={res.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
                               <div
-                                className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                                style={{ width: 34, height: 34, fontSize: 12 }}
+                                className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shrink-0"
                               >
                                 {res.candidate_name
                                   .split(" ")
@@ -337,31 +379,29 @@ export default function Upload() {
                                   .join("")}
                               </div>
                               <div>
-                                <div className="fw-semibold small">
+                                <div className="font-semibold text-slate-900">
                                   {res.candidate_name}
                                 </div>
-                                <div className="text-muted" style={{ fontSize: 11 }}>
+                                <div className="text-slate-500 text-xs mt-0.5">
                                   {res.experience_years} yr • {res.fileName}
                                 </div>
                               </div>
                             </div>
                           </td>
 
-                          <td>
-                            <div className="d-flex flex-wrap gap-1">
+                          <td className="px-6 py-4">
+                            <div className="flex flex-wrap gap-1.5 max-w-[200px] whitespace-normal">
                               {res.skills_found.slice(0, 3).map((s) => (
                                 <span
                                   key={s}
-                                  className="badge bg-success-subtle text-success border border-success-subtle"
-                                  style={{ fontSize: 10 }}
+                                  className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] px-2 py-0.5 rounded-md font-medium"
                                 >
                                   {s}
                                 </span>
                               ))}
                               {res.skills_found.length > 3 && (
                                 <span
-                                  className="badge bg-light text-muted border"
-                                  style={{ fontSize: 10 }}
+                                  className="bg-slate-100 text-slate-600 border border-slate-200 text-[11px] px-2 py-0.5 rounded-md font-medium"
                                 >
                                   +{res.skills_found.length - 3}
                                 </span>
@@ -369,21 +409,19 @@ export default function Upload() {
                             </div>
                           </td>
 
-                          <td>
-                            <div className="d-flex flex-wrap gap-1">
+                          <td className="px-6 py-4">
+                            <div className="flex flex-wrap gap-1.5 max-w-[200px] whitespace-normal">
                               {res.skills_missing.slice(0, 2).map((s) => (
                                 <span
                                   key={s}
-                                  className="badge bg-danger-subtle text-danger border border-danger-subtle"
-                                  style={{ fontSize: 10 }}
+                                  className="bg-rose-50 text-rose-700 border border-rose-200 text-[11px] px-2 py-0.5 rounded-md font-medium"
                                 >
                                   {s}
                                 </span>
                               ))}
                               {res.skills_missing.length > 2 && (
                                 <span
-                                  className="badge bg-light text-muted border"
-                                  style={{ fontSize: 10 }}
+                                  className="bg-slate-100 text-slate-600 border border-slate-200 text-[11px] px-2 py-0.5 rounded-md font-medium"
                                 >
                                   +{res.skills_missing.length - 2}
                                 </span>
@@ -391,19 +429,19 @@ export default function Upload() {
                             </div>
                           </td>
 
-                          <td>
+                          <td className="px-6 py-4">
                             <span
-                              className={`badge bg-${scoreBadgeColor(
+                              className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getBadgeClasses(
                                 res.overall_match_score
-                              )} rounded-pill`}
+                              )}`}
                             >
                               {res.overall_match_score}%
                             </span>
                           </td>
 
-                          <td>
+                          <td className="px-6 py-4">
                             <button
-                              className="btn btn-sm btn-outline-primary"
+                              className="text-sm font-medium text-indigo-600 bg-white border border-indigo-200 rounded-lg px-3 py-1.5 hover:bg-indigo-50 hover:border-indigo-300 transition-colors"
                               onClick={() => handleReviewCandidate(res)}
                             >
                               Review
